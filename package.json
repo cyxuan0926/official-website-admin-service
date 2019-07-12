@@ -6,22 +6,6 @@
   "egg": {
     "declarations": true
   },
-  "dependencies": {
-    "egg": "^2.15.1",
-    "egg-scripts": "^2.11.0"
-  },
-  "devDependencies": {
-    "autod": "^3.0.1",
-    "autod-egg": "^1.1.0",
-    "egg-bin": "^4.11.0",
-    "egg-ci": "^1.11.0",
-    "egg-mock": "^3.21.0",
-    "eslint": "^5.13.0",
-    "eslint-config-egg": "^7.1.0"
-  },
-  "engines": {
-    "node": ">=10.0.0"
-  },
   "scripts": {
     "start": "egg-scripts start --daemon --title=egg-server-official-website-service",
     "stop": "egg-scripts stop --title=egg-server-official-website-service",
@@ -32,7 +16,41 @@
     "cov": "egg-bin cov",
     "lint": "eslint .",
     "ci": "npm run lint && npm run cov",
-    "autod": "autod"
+    "autod": "autod",
+    "commit": "npx git-cz"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": "npm run lint"
+  },
+  "dependencies": {
+    "egg": "^2.15.1",
+    "egg-scripts": "^2.11.0"
+  },
+  "devDependencies": {
+    "autod": "^3.0.1",
+    "autod-egg": "^1.1.0",
+    "commitizen": "^3.1.1",
+    "cz-conventional-changelog": "^2.1.0",
+    "egg-bin": "^4.11.0",
+    "egg-ci": "^1.11.0",
+    "egg-mock": "^3.21.0",
+    "eslint": "^5.13.0",
+    "eslint-config-egg": "^7.1.0",
+    "husky": "^3.0.0",
+    "lint-staged": "^9.2.0"
+  },
+  "engines": {
+    "node": ">=10.0.0"
   },
   "ci": {
     "version": "10"
