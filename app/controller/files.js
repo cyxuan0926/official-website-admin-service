@@ -3,16 +3,15 @@
 const Controller = require('../core/base-controller');
 
 class FilesController extends Controller {
-  async uploadFile() {
+  async create() {
     const { ctx, service } = this;
-    const result = await service.files.create();
+    const result = await service.files.save();
     ctx.responseHandler[201](result);
   }
 
-  async deleteFile() {
+  async remove() {
     const { ctx, service } = this;
-    console.log('delete file', ctx.request.body);
-    await service.files.remove(ctx.request.body);
+    await service.files.remove(ctx.params.file_path);
     ctx.responseHandler[204]();
   }
 }

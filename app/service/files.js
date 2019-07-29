@@ -3,53 +3,75 @@
 const path = require('path');
 const md5 = require('md5');
 const fsPromises = require('fs').promises;
-const Service = require('egg').Service;
+// const Service = require('egg').Service;
+const Service = require('../core/base-service');
 
 class FileService extends Service {
-  async create() {
+  async save() {
     const { ctx } = this;
     return this._storeFile(ctx.request.files[0]);
   }
 
-  async remove(fileList) {
-    const { config } = this;
+  async remove(file_path) {
+    const { config, app } = this;
 
     try {
-      for (let i = 0; i < fileList.length; i++) {
-        await fsPromises.unlink(
-          path.resolve(config.upload.uploadDir, fileList[i].filename)
-        );
-      }
-      return { code: 0, msg: '文件删除成功' };
+      // for (let i = 0; i < fileList.length; i++) {
+      //   const file_path = fileList[i].file_path;
+      //   const result = file_path.match(/^.*\/(.+)$/);
+      //   const file_name = result && result[1];
+      //   console.log('file_name', file_name);
+      //   await fsPromises.unlink(
+      //     path.resolve(config.upload.uploadDir, file_name)
+      //   );
+      //   await app.mysql.delete('tb_files', { file_path });
+      // }
+
+      // const file_path = fileList[i].file_path;
+      const result = file_path.match(/^.*\/(.+)$/);
+      const file_name = result && result[1];
+      await fsPromises.unlink(
+        path.resolve(config.upload.uploadDir, file_name)
+      );
+      await app.mysql.delete('tb_files', { file_path });
     } catch (err) {
       throw err;
     }
   }
 
   async _storeFile(file) {
-    const { ctx, config } = this;
-    const { filename, filepath } = file;
-    const result = filename.match(/^(.+?)(\.\w+)?$/);
+    const { ctx, config, app } = this;
+    const { filename, filepath, mimeType } = file;
+    const matchResult = filename.match(/^(.+?)(\.\w+)?$/);
     // const imageSuffix = [ '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.wbmp', '.webp', '.svg' ];
-    console.log('upload', file);
-    console.log('config.uploadDir', config.upload.uploadDir);
 
     try {
-      const prefix = result && result[1];
-      const suffix = (result && result[2]) || '';
-      // 存储到数据库的文件名
-      const filenameStored = `${prefix}-${md5(filename + Date.now())}${suffix}`;
+      const prefix = matchResult && matchResult[1];
+      const suffix = (matchResult && matchResult[2]) || '';
+      const file_id = md5(filename + Date.now());
+
+      const file_name = `${prefix}-${file_id}${suffix}`;
       await fsPromises.copyFile(
         filepath,
-        path.resolve(config.upload.uploadDir, filenameStored)
+        path.resolve(config.upload.uploadDir, file_name)
       );
+      await app.mysql.insert('tb_files', {
+        file_id,
+        file_name,
+        file_path: config.static.prefix + file_name,
+        file_content_type: mimeType,
+        create_time: ctx.helper.formatTime(),
+        update_time: ctx.helper.formatTime(),
+      });
 
       return {
-        filename: filenameStored,
-        filepath: config.static.prefix + filenameStored,
+        file_id,
+        file_name,
+        file_path: config.static.prefix + file_name,
+        file_content_type: mimeType,
       };
     } catch (err) {
-      return {};
+      throw err;
     } finally {
       ctx.cleanupRequestFiles(); // 删除临时文件
     }

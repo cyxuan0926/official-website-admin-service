@@ -7,26 +7,53 @@ const Controller = require('../core/base-controller');
 const { accountRule } = require('../common/validation/rules');
 
 class UsersController extends Controller {
-  async create() {
+  async createToken() {
     const { app, ctx, service } = this;
     const account = ctx.request.body;
     ctx.validate(accountRule, account);
-    console.log('login', account);
 
     account.password = md5(Base64.decode(account.password));
     const accountInfo = await service.users.find(account);
-    console.log('accountInfo', accountInfo);
 
     if (accountInfo) {
       const token = jwt.sign(
         { user: { username: accountInfo.username } },
         app.config.jwt.secret,
-        { expiresIn: '1h' }
+        { expiresIn: '2h' }
       );
-      console.log('token', app.config.jwt.secret, token, jwt.verify(token, app.config.jwt.secret));
+
       ctx.responseHandler[201]({ token });
     } else {
       ctx.responseHandler[400](ctx.errorsMap.ACCOUNT_UNMATCH);
+    }
+  }
+
+  async update() {
+    const { ctx, service } = this;
+    const username = ctx.params.username;
+    const { old_password, new_password, confirm_password } = ctx.request.body;
+    // ctx.validate(accountRule, account);
+
+    // TODO: 表单校验
+    if (new_password !== confirm_password) {
+      ctx.responseHandler[400](ctx.errorsMap.PASSWORD_NOT_EQUAL);
+      return;
+    }
+
+    const account = await service.users.find({
+      username,
+      password: md5(Base64.decode(old_password)),
+    });
+
+    if (account) {
+      await service.users.update({
+        username,
+        password: md5(Base64.decode(new_password)),
+      });
+
+      ctx.responseHandler[201]();
+    } else {
+      ctx.responseHandler[400](ctx.errorsMap.OLD_PASSWORD_UNMATCH);
     }
   }
 }

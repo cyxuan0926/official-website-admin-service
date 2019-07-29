@@ -9,6 +9,7 @@ const articleRule = {
   article_type_id: { type: 'number', min: 1 },
   article_title: { type: 'string', min: 1, max: 32 },
   article_subtitle: { type: 'string', min: 1, max: 32, required: false },
+  article_description: { type: 'string', min: 1, max: 255 },
   article_author: { type: 'string', min: 1, max: 16, required: false },
   article_source: { type: 'string', min: 1, max: 255, required: false },
   article_content: { type: 'string', min: 1, max: 10 * 10000 },
@@ -21,4 +22,12 @@ const articleRule = {
   update_time: 'datetime',
 };
 
-module.exports = { articleRule, accountRule };
+const contactRule = {
+  contact_name: { type: 'string', min: 1, max: 16 },
+  contact_tel: { type: 'string', min: 1, max: 16 },
+  contact_region: { type: 'string', min: 1, max: 32 },
+  create_time: 'datetime?',
+  update_time: 'datetime',
+};
+
+module.exports = { accountRule, articleRule, contactRule };

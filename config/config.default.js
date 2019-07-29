@@ -14,15 +14,24 @@ module.exports = appInfo => {
    **/
   const config = exports = {};
 
+  config.cluster = {
+    listen: {
+      port: 7002,
+    },
+  };
+
   // use for cookie sign key, should change to your own and keep security
   config.keys = appInfo.name + '_1562912002800_1993';
 
   // add your middleware config here
-  config.middleware = [ 'jwt' ];
+  config.middleware = [ 'errorHandler', 'jwt' ];
 
   config.jwt = {
     secret: '_guo_ke_',
-    ignore: /\/oauth\/token$/,
+    // ignore: /\/oauth\/token$/,
+    match(ctx) {
+      return /^\/api/.test(ctx.path) && !/\/oauth\/token$/.test(ctx.path);
+    },
   };
 
   config.multipart = {
