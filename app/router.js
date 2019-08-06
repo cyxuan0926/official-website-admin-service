@@ -19,8 +19,8 @@ module.exports = app => {
   api.put('/articles', controller.articles.updateBatch);
 
   api.post('/files', controller.files.create);
-  api.delete('/files/:file_path', controller.files.remove);
-  // api.delete('/files', controller.files.remove);
+  // api.delete('/files/:file_path', controller.files.remove);
+  api.delete('/files', controller.files.remove);
 
   api.get('/contacts', controller.contacts.index);
   api.post('/contacts', controller.contacts.create);

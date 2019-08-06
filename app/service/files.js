@@ -2,8 +2,8 @@
 
 const path = require('path');
 const md5 = require('md5');
-const fsPromises = require('fs').promises;
-// const Service = require('egg').Service;
+// const fsPromises = require('fs').promises;
+const fs = require('fs');
 const Service = require('../core/base-service');
 
 class FileService extends Service {
@@ -12,31 +12,23 @@ class FileService extends Service {
     return this._storeFile(ctx.request.files[0]);
   }
 
-  async remove(file_path) {
+  async remove(files) {
     const { config, app } = this;
 
-    try {
-      // for (let i = 0; i < fileList.length; i++) {
-      //   const file_path = fileList[i].file_path;
-      //   const result = file_path.match(/^.*\/(.+)$/);
-      //   const file_name = result && result[1];
-      //   console.log('file_name', file_name);
-      //   await fsPromises.unlink(
-      //     path.resolve(config.upload.uploadDir, file_name)
-      //   );
-      //   await app.mysql.delete('tb_files', { file_path });
-      // }
+    files.forEach(async file => {
+      try {
+        const result = file.file_path.match(/^.*\/(.+)$/);
+        const file_name = result && result[1];
 
-      // const file_path = fileList[i].file_path;
-      const result = file_path.match(/^.*\/(.+)$/);
-      const file_name = result && result[1];
-      await fsPromises.unlink(
-        path.resolve(config.upload.uploadDir, file_name)
-      );
-      await app.mysql.delete('tb_files', { file_path });
-    } catch (err) {
-      throw err;
-    }
+        await this.unlink(path.resolve(config.upload.uploadDir, file_name));
+        // await fsPromises.unlink(
+        //   path.resolve(config.upload.uploadDir, file_name)
+        // );
+        await app.mysql.delete('tb_files', { file_path: file.file_path });
+      } catch (err) {
+        throw err;
+      }
+    });
   }
 
   async _storeFile(file) {
@@ -46,15 +38,18 @@ class FileService extends Service {
     // const imageSuffix = [ '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.wbmp', '.webp', '.svg' ];
 
     try {
-      const prefix = matchResult && matchResult[1];
       const suffix = (matchResult && matchResult[2]) || '';
       const file_id = md5(filename + Date.now());
+      const file_name = `${file_id}${suffix}`;
 
-      const file_name = `${prefix}-${file_id}${suffix}`;
-      await fsPromises.copyFile(
+      await this.copyFile(
         filepath,
         path.resolve(config.upload.uploadDir, file_name)
       );
+      // await fsPromises.copyFile(
+      //   filepath,
+      //   path.resolve(config.upload.uploadDir, file_name)
+      // );
       await app.mysql.insert('tb_files', {
         file_id,
         file_name,
@@ -75,6 +70,22 @@ class FileService extends Service {
     } finally {
       ctx.cleanupRequestFiles(); // 删除临时文件
     }
+  }
+
+  unlink(path) {
+    return new Promise((resolve, reject) => {
+      fs.unlink(path, err => {
+        err ? reject(err) : resolve(true);
+      });
+    });
+  }
+
+  copyFile(src, dest) {
+    return new Promise((resolve, reject) => {
+      fs.copyFile(src, dest, err => {
+        err ? reject(err) : resolve(true);
+      });
+    });
   }
 }
 

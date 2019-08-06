@@ -11,7 +11,8 @@ class FilesController extends Controller {
 
   async remove() {
     const { ctx, service } = this;
-    await service.files.remove(ctx.params.file_path);
+    await service.files.remove(ctx.request.body);
+    // await service.files.remove(ctx.params.file_path);
     ctx.responseHandler[204]();
   }
 }

@@ -14,17 +14,17 @@ module.exports = appInfo => {
    **/
   const config = exports = {};
 
-  config.cluster = {
-    listen: {
-      port: 7002,
-    },
-  };
-
   // use for cookie sign key, should change to your own and keep security
   config.keys = appInfo.name + '_1562912002800_1993';
 
   // add your middleware config here
   config.middleware = [ 'errorHandler', 'jwt' ];
+
+  config.security = {
+    csrf: {
+      ignoreJSON: true,
+    },
+  };
 
   config.jwt = {
     secret: '_guo_ke_',
@@ -43,9 +43,10 @@ module.exports = appInfo => {
   };
 
   config.static = {
+    gzip: true,
     dir: [
       path.resolve(process.cwd(), 'app/public'),
-      path.resolve(process.cwd(), '../official-website-assets'),
+      path.resolve(process.cwd(), '../official-website-admin'),
       path.resolve(process.cwd(), '../official-website-upload'),
     ],
   };

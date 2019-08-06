@@ -65,7 +65,7 @@ class ArticlesService extends Service {
       FROM tb_articles, tb_article_types
       WHERE tb_articles.article_type_id = tb_article_types.article_type_id
       ${filterSql && 'AND ' + filterSql}
-      ORDER BY article_istop DESC, article_rank, field(article_status, 2, 3, 1, 4), article_publish_time DESC
+      ORDER BY field(article_status, 2, 3, 1, 4), article_istop DESC, article_rank, article_publish_time DESC
       LIMIT ? OFFSET ?;
     `;
 
